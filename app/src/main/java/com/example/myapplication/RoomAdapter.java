@@ -64,7 +64,7 @@ public class RoomAdapter extends BaseAdapter implements IImageModified {
             public void onClick(View view) {
                 // send to method check
 
-                checkImage(imageView);
+                checkImage(imageView, position);
             }
         });
         return imageView;
@@ -100,7 +100,7 @@ public class RoomAdapter extends BaseAdapter implements IImageModified {
 
 
     @Override
-    public void checkImage(ImageView image) {
-        imageModified.checkImage(image);
+    public void checkImage(ImageView image, int position) {
+        imageModified.checkImage(image, position);
     }
 }
