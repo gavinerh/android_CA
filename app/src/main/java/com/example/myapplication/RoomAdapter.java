@@ -70,23 +70,6 @@ public class RoomAdapter extends BaseAdapter implements IImageModified {
         return imageView;
     }
 
-
-
-//    public void closeImages(ImageView image1, ImageView image2){
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                try{
-//                    Thread.sleep(1000);
-//                }catch (InterruptedException e){
-//                    e.printStackTrace();
-//                }
-//
-//            }
-//        }).start();
-//
-//    }
-
     @Override
     public int getCount() {
 

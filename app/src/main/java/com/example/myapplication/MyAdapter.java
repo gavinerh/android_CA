@@ -21,9 +21,12 @@ import java.util.List;
 public class MyAdapter extends BaseAdapter implements IImageClicked {
     private Context context;
     private ArrayList<Integer> selectedImages = new ArrayList<>();
-
+    private String[] filenames;
     private IImageClicked imageClicked;
-    public MyAdapter(Context c, IImageClicked imageClicked) {
+    // contain a list of imageView in order from 1 to 20
+    private List<ImageView> imageViewList = new ArrayList<>();
+    public MyAdapter(Context c, IImageClicked imageClicked, String[] filenames) {
+        this.filenames = filenames;
         this.imageClicked = imageClicked;
         context = c;
     }
@@ -46,11 +49,9 @@ public class MyAdapter extends BaseAdapter implements IImageClicked {
         }
     }
 
-
-
     @Override
     public int getCount() {
-        return carIds.length;
+        return filenames.length;
     }
 
     @Override
@@ -65,6 +66,10 @@ public class MyAdapter extends BaseAdapter implements IImageClicked {
 
     public List<Integer> getSelectedImages(){
         return selectedImages;
+    }
+
+    public List<ImageView> getImageViewList(){
+        return imageViewList;
     }
 
     @NonNull
@@ -82,9 +87,10 @@ public class MyAdapter extends BaseAdapter implements IImageClicked {
         }else {
             imageView = (ImageView) convertView;
         }
-        imageView.setImageResource(carIds[position]);
+        imageView.setImageResource(R.drawable.question);
         // we set the id of imageView to the image resource id which is linked to the photo
-        imageView.setId(carIds[position]);
+        imageView.setId(position);
+        imageViewList.add(imageView);
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -92,15 +98,10 @@ public class MyAdapter extends BaseAdapter implements IImageClicked {
                 addToSelectedImages(imageView.getId());
             }
         });
+
         return imageView;
     }
 
-    public Integer[] carIds = {
-            R.drawable.sample1, R.drawable.sample2, R.drawable.sample3,
-            R.drawable.sample4, R.drawable.sample5, R.drawable.sample6,
-            R.drawable.sample7, R.drawable.sample8, R.drawable.sample9,
-            R.drawable.sample10
-    };
 
     @Override
     public void selectedImagesList(ArrayList<Integer> list) {
