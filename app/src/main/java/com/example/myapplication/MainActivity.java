@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
                     File destFile = new File(dir, filenames[i]);
                     String imgUrl = storedImageUrl.get(filenames[i]);
                     ImageDownloader.downloadImage(imgUrl, destFile);
-                    ImageView imgView = imageViewList.get(i);
+                    ImageView imgView = imageViewList.get(i+2); // dont know why need to plus 2 but it works
                     if (ImageDownloader.downloadImage(imgUrl, destFile)) {
                         runOnUiThread(new Runnable() {
                             @Override

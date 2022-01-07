@@ -94,6 +94,7 @@ public class MyAdapter extends BaseAdapter implements IImageClicked {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Toast.makeText(context.getApplicationContext(), String.format("%s", position), Toast.LENGTH_SHORT).show();
                 // add the selected images into the list
                 addToSelectedImages(imageView.getId());
             }
