@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
     List<String> imageUrlExtracted = new ArrayList<>();
     // store the key as filename, value as url, exactly 20 pairs
     HashMap<String, String> storedImageUrl = new HashMap<String, String>();
+    // key is the position and string is the filename
+    HashMap<Integer, String> gridImageDescriptors = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +51,9 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
 
     @Override
     public void selectedImagesList(ArrayList<Integer> list) {
+        // receive the list of grid positions entered, check again if correct
+
+        // use the gridImageDescriptor to create a new list of filenames to send over
         Intent intent = new Intent(this, EnterRoom.class);
         intent.putExtra("testing", list);
         startActivity(intent);
@@ -89,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
                     String imgUrl = storedImageUrl.get(filenames[i]);
                     ImageDownloader.downloadImage(imgUrl, destFile);
                     ImageView imgView = imageViewList.get(i+2); // dont know why need to plus 2 but it works
+                    int position = i;
                     if (ImageDownloader.downloadImage(imgUrl, destFile)) {
                         runOnUiThread(new Runnable() {
                             @Override
@@ -96,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
                                 Bitmap bitmap = BitmapFactory.decodeFile(destFile.getAbsolutePath());
                                 // get imageview from list initialised in the myAdapter class
                                 imgView.setImageBitmap(bitmap);
+                                gridImageDescriptors.put(position, destFile.getAbsolutePath());
                             }
                         });
                     } else {
