@@ -18,6 +18,7 @@ import java.util.List;
 
 public class EnterRoom extends AppCompatActivity implements IImageModified{
 
+    Thread checkWinningStatus;
     private int pairs = 0;
     RoomAdapter adapter;
     // create list to capture images that are correctly selected
@@ -55,6 +56,7 @@ public class EnterRoom extends AppCompatActivity implements IImageModified{
             ImageModel model = new ImageModel(imageview, position);
             counter.put(resourceid, model);
         }else{
+
             // compare the values
             if(counter.containsKey(resourceid.intValue())){
                 // both pictures are similar and we do not close them
@@ -78,9 +80,30 @@ public class EnterRoom extends AppCompatActivity implements IImageModified{
                 }catch(Exception e){
                     e.printStackTrace();
                 }
-                adapter.closeImages(imageview, imageView2);
+                closeImages(imageview, imageView2);
             }
             counter.clear();
         }
+    }
+
+    public void closeImages(ImageView image1, ImageView image2){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    Thread.sleep(1000);
+                }catch (InterruptedException e){
+                    e.printStackTrace();
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        image1.setImageResource(R.drawable.question);
+                        image2.setImageResource(R.drawable.question);
+                    }
+                });
+            }
+        }).start();
+
     }
 }
