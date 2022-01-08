@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import android.content.Context;
 import android.media.Image;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,7 +77,7 @@ public class MyAdapter extends BaseAdapter implements IImageClicked {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         ImageView imageView;
-
+        Log.d("Size of imageListView", String.format("%s", imageViewList.size()));
         if(convertView == null){
             imageView = new ImageView(context);
             // set the imageView look

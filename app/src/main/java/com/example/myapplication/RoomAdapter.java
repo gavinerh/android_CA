@@ -44,7 +44,6 @@ public class RoomAdapter extends BaseAdapter implements IImageModified {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         ImageView imageView;
-
         if(convertView == null){
             imageView = new ImageView(context);
             // set the imageView look

@@ -8,7 +8,10 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.View;
 import android.widget.Adapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -29,6 +32,8 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
     String[] filenames;
     MyAdapter myAdapter;
     GridView gridView;
+    EditText enterUrl;
+    Button searchBtn;
     List<ImageView> imageViewList;
     // extracted url of all img tags in entered url , more than 20 images
     List<String> imageUrlExtracted = new ArrayList<>();
@@ -46,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
         // gotten back the list of imageview after initUIElements, where the gridview is initialised
         initUIElements();
         // download images
-        downloadImagesHandler();
+//        downloadImagesHandler();
     }
 
     @Override
@@ -63,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
         myAdapter = new MyAdapter(this, this, filenames);
         GridView gridView = (GridView) findViewById(R.id.gridView);
         gridView.setAdapter(myAdapter);
+        searchBtn = findViewById(R.id.search);
+        enterUrl = findViewById(R.id.enter_url);
         imageViewList = myAdapter.getImageViewList();
     }
 
@@ -75,13 +82,18 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
         }
     }
 
-    private void downloadImagesHandler() {
+    public void search(View view){
+        String url = enterUrl.getText().toString();
+        downloadImagesHandler(url);
+    }
 
+    private void downloadImagesHandler(String url) {
+        if(url == null || url.equals("")) return;
         new Thread(new Runnable() {
             @Override
             public void run() {
                 // populate the list with image url
-                getImageUrl();
+                getImageUrl(url);
 
                 // select 20 images from arraylist and store in hashmap
                 populateStoredImageUrl();
@@ -95,26 +107,23 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
                     ImageDownloader.downloadImage(imgUrl, destFile);
                     ImageView imgView = imageViewList.get(i+2); // dont know why need to plus 2 but it works
                     int position = i;
-                    if (ImageDownloader.downloadImage(imgUrl, destFile)) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Bitmap bitmap = BitmapFactory.decodeFile(destFile.getAbsolutePath());
-                                // get imageview from list initialised in the myAdapter class
-                                imgView.setImageBitmap(bitmap);
-                                gridImageDescriptors.put(position, destFile.getAbsolutePath());
-                            }
-                        });
-                    } else {
-                        Log.d("Downloading image failed", "Image not downloaded");
-                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Bitmap bitmap = BitmapFactory.decodeFile(destFile.getAbsolutePath());
+                            // get imageview from list initialised in the myAdapter class
+                            imgView.setImageBitmap(bitmap);
+                            gridImageDescriptors.put(position, destFile.getAbsolutePath());
+                        }
+                    });
+
                 }
             }
         }).start();
     }
 
-    private void getImageUrl() {
-        String strURL = "https://stocksnap.io";
+    private void getImageUrl(String strURL) {
+//        String strURL = "https://www.stocksnap.io";
 
         //connect to the website and get the document
 
