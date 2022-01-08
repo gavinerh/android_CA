@@ -27,6 +27,36 @@ import java.util.HashMap;
 import java.util.List;
 
 public class copyMainActivity {
+
+
+
+//import androidx.appcompat.app.AppCompatActivity;
+//
+//import android.content.Intent;
+//import android.graphics.Bitmap;
+//import android.graphics.BitmapFactory;
+//import android.os.Bundle;
+//import android.os.Environment;
+//import android.util.Log;
+//import android.view.View;
+//import android.widget.Adapter;
+//import android.widget.Button;
+//import android.widget.EditText;
+//import android.widget.GridView;
+//import android.widget.ImageView;
+//import android.widget.Toast;
+//
+//import org.jsoup.Jsoup;
+//import org.jsoup.nodes.Document;
+//import org.jsoup.nodes.Element;
+//import org.jsoup.select.Elements;
+//
+//import java.io.File;
+//import java.io.IOException;
+//import java.util.ArrayList;
+//import java.util.HashMap;
+//import java.util.List;
+//
 //    public class MainActivity extends AppCompatActivity implements IImageClicked {
 //
 //        String[] filenames;
@@ -50,9 +80,9 @@ public class copyMainActivity {
 //            initFilenames();
 //            // gotten back the list of imageview after initUIElements, where the gridview is initialised
 //            initUIElements();
+//            downloadImagesHandler();
 //            // download images
 ////        downloadImagesHandler();
-//
 //        }
 //
 //        @Override
@@ -61,7 +91,12 @@ public class copyMainActivity {
 //
 //            // use the gridImageDescriptor to create a new list of filenames to send over
 //            Intent intent = new Intent(this, EnterRoom.class);
-//            intent.putExtra("testing", list);
+//            ArrayList<String> filepaths = new ArrayList<>();
+//            for(int i=0; i<list.size(); i++){
+//                filepaths.add(gridImageDescriptors.get(list.get(i)));
+//                Log.d("send filenames", gridImageDescriptors.get(list.get(i)));
+//            }
+//            intent.putExtra("testing", filepaths);
 //            startActivity(intent);
 //        }
 //
@@ -85,18 +120,16 @@ public class copyMainActivity {
 //
 //        public void search(View view){
 //            String url = enterUrl.getText().toString();
-//            downloadImagesHandler(url);
-//            InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
-//            inputMethodManager.hideSoftInputFromWindow(view.getApplicationWindowToken(),0);
+//            downloadImagesHandler();
 //        }
 //
-//        private void downloadImagesHandler(String url) {
-//            if(url == null || url.equals("")) return;
-//            Thread thread2 = new Thread(new Runnable() {
+//        private void downloadImagesHandler() {
+////        if(url == null || url.equals("")) return;
+//            new Thread(new Runnable() {
 //                @Override
 //                public void run() {
 //                    // populate the list with image url
-//                    getImageUrl(url);
+//                    getImageUrl();
 //
 //                    // select 20 images from arraylist and store in hashmap
 //                    populateStoredImageUrl();
@@ -104,10 +137,10 @@ public class copyMainActivity {
 //                    // download the images from image url stored in list
 //                    File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 //
-//                    for (int i=filenames.length-1; i>=0; i--) {
+//                    for (int i=0; i<filenames.length; i++) {
 //                        File destFile = new File(dir, filenames[i]);
 //                        String imgUrl = storedImageUrl.get(filenames[i]);
-//                        boolean bol = ImageDownloader.downloadImage(imgUrl, destFile);
+//                        ImageDownloader.downloadImage(imgUrl, destFile);
 //                        ImageView imgView = imageViewList.get(i+2); // dont know why need to plus 2 but it works
 //                        int position = i;
 //                        runOnUiThread(new Runnable() {
@@ -117,18 +150,16 @@ public class copyMainActivity {
 //                                // get imageview from list initialised in the myAdapter class
 //                                imgView.setImageBitmap(bitmap);
 //                                gridImageDescriptors.put(position, destFile.getAbsolutePath());
-//
 //                            }
 //                        });
+//
 //                    }
 //                }
-//            });
-//            thread2.start();
+//            }).start();
 //        }
 //
-//
-//        private void getImageUrl(String strURL) {
-////        String strURL = "https://www.stocksnap.io";
+//        private void getImageUrl() {
+//            String strURL = "https://www.stocksnap.io";
 //
 //            //connect to the website and get the document
 //
@@ -159,6 +190,5 @@ public class copyMainActivity {
 //                storedImageUrl.put(filenames[i], imageUrl);
 //            }
 //        }
-//
 //    }
 }

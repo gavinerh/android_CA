@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Adapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,17 +28,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements IImageClicked {
+public class MainActivity extends AppCompatActivity{
 
     String[] filenames;
-    MyAdapter myAdapter;
-    GridView gridView;
     EditText enterUrl;
     Button searchBtn;
-    List<ImageView> imageViewList;
+    // list all the image view
+    List<ImageView> imageViewList = new ArrayList<>();
     // extracted url of all img tags in entered url , more than 20 images
     List<String> imageUrlExtracted = new ArrayList<>();
     // store the key as filename, value as url, exactly 20 pairs
+    List<Integer> storedImageView = new ArrayList<>();
     HashMap<String, String> storedImageUrl = new HashMap<String, String>();
     // key is the position and string is the filename
     HashMap<Integer, String> gridImageDescriptors = new HashMap<>();
@@ -50,33 +51,62 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
         initFilenames();
         // gotten back the list of imageview after initUIElements, where the gridview is initialised
         initUIElements();
-        downloadImagesHandler();
+//        downloadImagesHandler();
         // download images
 //        downloadImagesHandler();
     }
 
-    @Override
-    public void selectedImagesList(ArrayList<Integer> list) {
-        // receive the list of grid positions entered, check again if correct
-
-        // use the gridImageDescriptor to create a new list of filenames to send over
-        Intent intent = new Intent(this, EnterRoom.class);
-        ArrayList<String> filepaths = new ArrayList<>();
-        for(int i=0; i<list.size(); i++){
-            filepaths.add(gridImageDescriptors.get(list.get(i)));
-            Log.d("send filenames", gridImageDescriptors.get(list.get(i)));
-        }
-        intent.putExtra("testing", filepaths);
-        startActivity(intent);
-    }
-
     private void initUIElements() {
-        myAdapter = new MyAdapter(this, this, filenames);
-        GridView gridView = (GridView) findViewById(R.id.gridView);
-        gridView.setAdapter(myAdapter);
         searchBtn = findViewById(R.id.search);
         enterUrl = findViewById(R.id.enter_url);
-        imageViewList = myAdapter.getImageViewList();
+        imageViewList.add(findViewById(R.id.image1));
+        imageViewList.add(findViewById(R.id.image2));
+        imageViewList.add(findViewById(R.id.image3));
+        imageViewList.add(findViewById(R.id.image4));
+        imageViewList.add(findViewById(R.id.image5));
+        imageViewList.add(findViewById(R.id.image6));
+        imageViewList.add(findViewById(R.id.image7));
+        imageViewList.add(findViewById(R.id.image8));
+        imageViewList.add(findViewById(R.id.image9));
+        imageViewList.add(findViewById(R.id.image10));
+        imageViewList.add(findViewById(R.id.image11));
+        imageViewList.add(findViewById(R.id.image12));
+        imageViewList.add(findViewById(R.id.image13));
+        imageViewList.add(findViewById(R.id.image14));
+        imageViewList.add(findViewById(R.id.image15));
+        imageViewList.add(findViewById(R.id.image16));
+        imageViewList.add(findViewById(R.id.image17));
+        imageViewList.add(findViewById(R.id.image18));
+        imageViewList.add(findViewById(R.id.image19));
+        imageViewList.add(findViewById(R.id.image20));
+        for(int i=0; i<imageViewList.size(); i++){
+            imageViewList.get(i).setImageResource(R.drawable.question);
+            int position = i;
+            imageViewList.get(i).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // send to a method to store the imageView that is selected
+                    tabulateSelectedImageView(position);
+                }
+            });
+        }
+    }
+
+    private void tabulateSelectedImageView(int position){
+        if(storedImageView.contains(position)){
+            Toast.makeText(getApplicationContext(), "Added this image already", Toast.LENGTH_SHORT).show();
+        }else{
+            storedImageView.add(position);
+        }
+        if(storedImageView.size() == 6){
+            Intent intent = new Intent(this, EnterRoom.class);
+            ArrayList<String> copy = new ArrayList<>();
+            for(Integer i : storedImageView){
+                copy.add(gridImageDescriptors.get(i));
+            }
+            intent.putExtra("testing", copy);
+            startActivity(intent);
+        }
     }
 
     private void initFilenames() {
@@ -90,16 +120,18 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
 
     public void search(View view){
         String url = enterUrl.getText().toString();
-        downloadImagesHandler();
+        downloadImagesHandler(url);
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
     }
 
-    private void downloadImagesHandler() {
-//        if(url == null || url.equals("")) return;
+    private void downloadImagesHandler(String url) {
+        if(url == null || url.equals("")) return;
         new Thread(new Runnable() {
             @Override
             public void run() {
                 // populate the list with image url
-                getImageUrl();
+                getImageUrl(url);
 
                 // select 20 images from arraylist and store in hashmap
                 populateStoredImageUrl();
@@ -111,13 +143,14 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
                     File destFile = new File(dir, filenames[i]);
                     String imgUrl = storedImageUrl.get(filenames[i]);
                     ImageDownloader.downloadImage(imgUrl, destFile);
-                    ImageView imgView = imageViewList.get(i+2); // dont know why need to plus 2 but it works
+                    ImageView imgView = imageViewList.get(i);
                     int position = i;
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Bitmap bitmap = BitmapFactory.decodeFile(destFile.getAbsolutePath());
                             // get imageview from list initialised in the myAdapter class
+                            imgView.setImageResource(0);
                             imgView.setImageBitmap(bitmap);
                             gridImageDescriptors.put(position, destFile.getAbsolutePath());
                         }
@@ -128,8 +161,8 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
         }).start();
     }
 
-    private void getImageUrl() {
-        String strURL = "https://www.stocksnap.io";
+    private void getImageUrl(String strURL) {
+//        String strURL = "https://www.stocksnap.io";
 
         //connect to the website and get the document
 
