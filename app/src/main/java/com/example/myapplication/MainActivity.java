@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
         initFilenames();
         // gotten back the list of imageview after initUIElements, where the gridview is initialised
         initUIElements();
+        downloadImagesHandler();
         // download images
 //        downloadImagesHandler();
     }
@@ -60,7 +61,12 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
 
         // use the gridImageDescriptor to create a new list of filenames to send over
         Intent intent = new Intent(this, EnterRoom.class);
-        intent.putExtra("testing", list);
+        ArrayList<String> filepaths = new ArrayList<>();
+        for(int i=0; i<list.size(); i++){
+            filepaths.add(gridImageDescriptors.get(list.get(i)));
+            Log.d("send filenames", gridImageDescriptors.get(list.get(i)));
+        }
+        intent.putExtra("testing", filepaths);
         startActivity(intent);
     }
 
@@ -84,16 +90,16 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
 
     public void search(View view){
         String url = enterUrl.getText().toString();
-        downloadImagesHandler(url);
+        downloadImagesHandler();
     }
 
-    private void downloadImagesHandler(String url) {
-        if(url == null || url.equals("")) return;
+    private void downloadImagesHandler() {
+//        if(url == null || url.equals("")) return;
         new Thread(new Runnable() {
             @Override
             public void run() {
                 // populate the list with image url
-                getImageUrl(url);
+                getImageUrl();
 
                 // select 20 images from arraylist and store in hashmap
                 populateStoredImageUrl();
@@ -122,8 +128,8 @@ public class MainActivity extends AppCompatActivity implements IImageClicked {
         }).start();
     }
 
-    private void getImageUrl(String strURL) {
-//        String strURL = "https://www.stocksnap.io";
+    private void getImageUrl() {
+        String strURL = "https://www.stocksnap.io";
 
         //connect to the website and get the document
 

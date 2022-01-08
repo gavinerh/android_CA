@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.Image;
 import android.util.Log;
@@ -32,11 +33,13 @@ public class MyAdapter extends BaseAdapter implements IImageClicked {
         context = c;
     }
 
-    public void addToSelectedImages(int id){
+    @SuppressLint("ResourceAsColor")
+    public void addToSelectedImages(int id, ImageView imageView){
         if(selectedImages.size() <= 6 && !selectedImages.contains(id)){
+            imageView.setBackgroundColor(R.color.cardview_shadow_end_color);
             selectedImages.add(id);
         }else{
-            Toast.makeText(context.getApplicationContext(), "Exceeded the count of 6 images or already contain image", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context.getApplicationContext(), "Image already selected", Toast.LENGTH_SHORT).show();
         }
         if(selectedImages.size() == 6){
             ArrayList<Integer> copy = new ArrayList<>();
@@ -84,20 +87,23 @@ public class MyAdapter extends BaseAdapter implements IImageClicked {
             imageView.setClickable(true);
             imageView.setLayoutParams(new GridView.LayoutParams(250, 250));
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            imageView.setPadding(4, 4, 4, 4);
+            imageView.setPadding(20, 20, 20, 20);
         }else {
             imageView = (ImageView) convertView;
         }
+
         imageView.setImageResource(R.drawable.question);
         // we set the id of imageView to the image resource id which is linked to the photo
         imageView.setId(position);
-        imageViewList.add(imageView);
+        if(! (position == 0 && imageViewList.size() > 10)){
+            imageViewList.add(imageView);
+        }
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Toast.makeText(context.getApplicationContext(), String.format("%s", position), Toast.LENGTH_SHORT).show();
                 // add the selected images into the list
-                addToSelectedImages(imageView.getId());
+                addToSelectedImages(imageView.getId(), imageView);
             }
         });
 

@@ -4,10 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.reflect.Array;
@@ -18,52 +21,65 @@ import java.util.List;
 
 public class EnterRoom extends AppCompatActivity implements IImageModified{
 
+    TextView winningStatus;
     Thread checkWinningStatus;
     private int pairs = 0;
     RoomAdapter adapter;
     // create list to capture images that are correctly selected
     private List<Integer> selectedPositions = new ArrayList<>();
-    private HashMap<Integer, ImageModel> counter = new HashMap<Integer, ImageModel>();
+    // stores filename as key, and image model as values
+    private HashMap<String, ImageModel> counter = new HashMap<String, ImageModel>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_enter_room);
 
+        winningStatus = findViewById(R.id.winning_status);
+        setWinningStatus();
         Intent intent = getIntent();
-        ArrayList<Integer> images = intent.getIntegerArrayListExtra("testing");
+        ArrayList<String> images = intent.getStringArrayListExtra("testing");
 
         adapter = new RoomAdapter(this, images, this);
         GridView gridView = (GridView) findViewById(R.id.gridView2);
         gridView.setAdapter(adapter);
     }
 
+    private void setWinningStatus(){
+        String str = String.format("%s", pairs);
+        str += " of 6 matches";
+        winningStatus.setText(str);
+    }
+
     @Override
-    public void checkImage(ImageView image, int position) {
-        check(image, position);
+    public void checkImage(ImageView image, String[] playinglist) {
+        check(image, playinglist);
     }
 
     // check and add to number of correctly opened items
     // close the wrongly selected ones
     @SuppressLint("ResourceType")
-    private void check(ImageView imageview, int position){
+    private void check(ImageView imageview, String[] playingList){
         // disable user from clicking previously selected positions
-        selectedPositions.add(position);
+        // id holds the position of the image in grid
+        selectedPositions.add(imageview.getId());
 
-        Integer resourceid = imageview.getId();
-        imageview.setImageResource(resourceid);
+        Integer position = imageview.getId();
+        Bitmap bitmap = BitmapFactory.decodeFile(playingList[imageview.getId()]);
+        imageview.setImageBitmap(bitmap);
 
         if(counter.isEmpty()){
             ImageModel model = new ImageModel(imageview, position);
-            counter.put(resourceid, model);
+            counter.put(playingList[imageview.getId()], model);
         }else{
 
-            // compare the values
-            if(counter.containsKey(resourceid.intValue())){
+            // compare the values by comparing the filenames
+            if(counter.containsKey(playingList[imageview.getId()])){
                 // both pictures are similar and we do not close them
                 // add to winning pairs
                 imageview.setClickable(false);
-                counter.get(resourceid.intValue()).getImageView().setClickable(false);
+                counter.get(playingList[imageview.getId()]).getImageView().setClickable(false);
                 pairs++;
+                setWinningStatus();
             }else{
                 // close the 2 pictures as they are dissimilar
                 // create a delay of 1 sec before closing
@@ -83,6 +99,12 @@ public class EnterRoom extends AppCompatActivity implements IImageModified{
                 closeImages(imageview, imageView2);
             }
             counter.clear();
+        }
+        Log.d("Winning pairs", String.format("%s", pairs));
+        if(pairs == 6){
+            Intent intent = new Intent(this, WinningMessage.class);
+            startActivity(intent);
+            finish();
         }
     }
 

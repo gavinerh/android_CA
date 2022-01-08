@@ -2,6 +2,8 @@ package com.example.myapplication;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.util.Log;
 import android.view.View;
@@ -26,10 +28,10 @@ public class RoomAdapter extends BaseAdapter implements IImageModified {
 
     // create list to hold images list for playing
     // list position will correspond to image position on the grid
-    private Integer[] playingList;
+    private String[] playingList;
 
     // constructor
-    public RoomAdapter(Context context, ArrayList<Integer> list, IImageModified imageModified){
+    public RoomAdapter(Context context, ArrayList<String> list, IImageModified imageModified){
         this.imageModified = imageModified;
         playingList = Randomize.randomizeArray(list);
         for(int i=0; i<playingList.length; i++){
@@ -57,13 +59,15 @@ public class RoomAdapter extends BaseAdapter implements IImageModified {
 //        imageView.setImageResource(R.drawable.question);
         imageView.setImageResource(R.drawable.question);
         // we set the id of imageView to the image resource id which is linked to the photo
-        imageView.setId(playingList[position]);
+        imageView.setId(position);
+        imageView.setImageResource(R.drawable.question);
+//        Bitmap bitmap = BitmapFactory.decodeFile(playingList[position]);
+//        imageView.setImageBitmap(bitmap);
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // send to method check
-
-                checkImage(imageView, position);
+                // send to method checkImage
+                checkImage(imageView, playingList);
             }
         });
         return imageView;
@@ -87,7 +91,7 @@ public class RoomAdapter extends BaseAdapter implements IImageModified {
 
 
     @Override
-    public void checkImage(ImageView image, int position) {
-        imageModified.checkImage(image, position);
+    public void checkImage(ImageView image, String[] playingList) {
+        imageModified.checkImage(image, playingList);
     }
 }
