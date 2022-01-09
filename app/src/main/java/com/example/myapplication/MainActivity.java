@@ -13,6 +13,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import org.jsoup.Jsoup;
@@ -29,6 +30,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity{
 
     String[] filenames;
+    ProgressBar progressBar;
     EditText enterUrl;
     Button searchBtn;
     // contains reference to all the image view
@@ -46,8 +48,6 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
     }
 
     @Override
@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity{
     private void initUIElements() {
         searchBtn = findViewById(R.id.search);
         enterUrl = findViewById(R.id.enter_url);
+        progressBar = findViewById(R.id.progress_bar);
         populateImageViewList();
     }
 
@@ -145,6 +146,7 @@ public class MainActivity extends AppCompatActivity{
     // handle downloading of images
     private void downloadImagesHandler(String url) {
         if(url == null || url.equals("")) return;
+        progressBar.setVisibility(View.VISIBLE);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -170,6 +172,7 @@ public class MainActivity extends AppCompatActivity{
                             // get imageview from list initialised in the myAdapter class
                             imgView.setImageResource(0);
                             imgView.setImageBitmap(bitmap);
+                            progressBar.incrementProgressBy(5);
                             gridImageToFilepath.put(position, destFile.getAbsolutePath());
                         }
                     });
