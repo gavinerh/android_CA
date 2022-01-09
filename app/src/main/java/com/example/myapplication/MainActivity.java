@@ -10,10 +10,8 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Adapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -33,29 +31,51 @@ public class MainActivity extends AppCompatActivity{
     String[] filenames;
     EditText enterUrl;
     Button searchBtn;
-    // list all the image view
-    List<ImageView> imageViewList = new ArrayList<>();
-    // extracted url of all img tags in entered url , more than 20 images
-    List<String> imageUrlExtracted = new ArrayList<>();
-    // store the key as filename, value as url, exactly 20 pairs
-    List<Integer> storedImageView = new ArrayList<>();
-    HashMap<String, String> storedImageUrl = new HashMap<String, String>();
-    // key is the position and string is the filename
-    HashMap<Integer, String> gridImageDescriptors = new HashMap<>();
+    // contains reference to all the image view
+    List<ImageView> imageViewList = null;
+    // extracted url string from Jsoup
+    List<String> imageUrlExtracted = null;
+
+    List<Integer> storedImageView = null;
+    // store the key as filename, value as url string, for referencing filename to url string, only 20
+    HashMap<String, String> storedImageUrl = null;
+    // key is the integer grid position and string is the filepath
+    HashMap<Integer, String> gridImageToFilepath = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initDataStructures();
         // initialise the filenames
         initFilenames();
-
         initUIElements();
+    }
+
+
+    private void initDataStructures(){
+        storedImageUrl = new HashMap<String, String>();
+        storedImageView = new ArrayList<>();
+        imageUrlExtracted = new ArrayList<>();
+        imageViewList = new ArrayList<>();
+        gridImageToFilepath = new HashMap<>();
     }
 
     private void initUIElements() {
         searchBtn = findViewById(R.id.search);
         enterUrl = findViewById(R.id.enter_url);
+        populateImageViewList();
+    }
+
+    // fill imageViewlist with the imageViews
+    private void populateImageViewList(){
         imageViewList.add(findViewById(R.id.image1));
         imageViewList.add(findViewById(R.id.image2));
         imageViewList.add(findViewById(R.id.image3));
@@ -88,6 +108,7 @@ public class MainActivity extends AppCompatActivity{
             });
         }
     }
+
     // combine all the images selected into a list
     private void tabulateSelectedImageView(int position){
         if(storedImageView.contains(position)){
@@ -99,7 +120,7 @@ public class MainActivity extends AppCompatActivity{
             Intent intent = new Intent(this, EnterRoom.class);
             ArrayList<String> copy = new ArrayList<>();
             for(Integer i : storedImageView){
-                copy.add(gridImageDescriptors.get(i));
+                copy.add(gridImageToFilepath.get(i));
             }
             intent.putExtra("testing", copy);
             startActivity(intent);
@@ -149,7 +170,7 @@ public class MainActivity extends AppCompatActivity{
                             // get imageview from list initialised in the myAdapter class
                             imgView.setImageResource(0);
                             imgView.setImageBitmap(bitmap);
-                            gridImageDescriptors.put(position, destFile.getAbsolutePath());
+                            gridImageToFilepath.put(position, destFile.getAbsolutePath());
                         }
                     });
                 }

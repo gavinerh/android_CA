@@ -33,7 +33,7 @@ public class EnterRoom extends AppCompatActivity implements IImageModified{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_enter_room);
 
-        timer = findViewById(R.id.timer);
+        timer = findViewById(R.id.countdownTimer);
         winningStatus = findViewById(R.id.winning_status);
         setWinningStatus();
         Intent intent = getIntent();
@@ -78,7 +78,7 @@ public class EnterRoom extends AppCompatActivity implements IImageModified{
                             Intent intent = new Intent(getApplicationContext(), GameOutcome.class);
                             intent.putExtra("outcome", "lost");
                             startActivity(intent);
-
+                            finish();
                         }
                     });
                 }

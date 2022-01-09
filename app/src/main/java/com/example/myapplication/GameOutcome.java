@@ -4,11 +4,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class GameOutcome extends AppCompatActivity {
 
     TextView textView;
+    Button playAgain;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,5 +25,15 @@ public class GameOutcome extends AppCompatActivity {
         }else{
             textView.setText("Congratulations you won");
         }
+
+        playAgain = findViewById(R.id.playAgain);
+        playAgain.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                startService(intent);
+                finish();
+            }
+        });
     }
 }
