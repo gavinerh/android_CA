@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity{
     ProgressBar progressBar;
     EditText enterUrl;
     Button searchBtn;
+    Thread downloader = null;
+    boolean isImagesDownloaded;
     // contains reference to all the image view
     List<ImageView> imageViewList = null;
     // extracted url string from Jsoup
@@ -72,6 +74,7 @@ public class MainActivity extends AppCompatActivity{
         searchBtn = findViewById(R.id.search);
         enterUrl = findViewById(R.id.enter_url);
         progressBar = findViewById(R.id.progress_bar);
+        isImagesDownloaded = false;
         populateImageViewList();
     }
 
@@ -98,13 +101,20 @@ public class MainActivity extends AppCompatActivity{
         imageViewList.add(findViewById(R.id.image19));
         imageViewList.add(findViewById(R.id.image20));
         for(int i=0; i<imageViewList.size(); i++){
-            imageViewList.get(i).setImageResource(R.drawable.question);
+            ImageView temp = imageViewList.get(i);
+            temp.setImageResource(R.drawable.question);
+            temp.setBackgroundColor(getResources().getColor(R.color.white));
             int position = i;
             imageViewList.get(i).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     // send to a method to store the imageView that is selected
-                    tabulateSelectedImageView(position);
+                    if(isImagesDownloaded){
+                        tabulateSelectedImageView(position);
+                    }else{
+                        Toast.makeText(getApplicationContext(), "Click is disabled as images are not downloaded yet", Toast.LENGTH_SHORT).show();
+                    }
+                    
                 }
             });
         }
@@ -116,6 +126,9 @@ public class MainActivity extends AppCompatActivity{
             Toast.makeText(getApplicationContext(), "Added this image already", Toast.LENGTH_SHORT).show();
         }else{
             storedImageView.add(position);
+            // change the look of the image
+            ImageView imgView = imageViewList.get(position);
+            imgView.setBackgroundColor(getResources().getColor(R.color.yellow));
         }
         if(storedImageView.size() == 6){
             Intent intent = new Intent(this, EnterRoom.class);
@@ -139,6 +152,12 @@ public class MainActivity extends AppCompatActivity{
     // onclick method for search button
     public void search(View view){
         String url = enterUrl.getText().toString();
+        if(downloader != null){
+            // clear all data structures and reset progress bar
+            if(downloader.isAlive()){
+                downloader.interrupt();
+            }
+        }
         downloadImagesHandler(url);
         InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
@@ -147,19 +166,36 @@ public class MainActivity extends AppCompatActivity{
     private void downloadImagesHandler(String url) {
         if(url == null || url.equals("")) return;
         progressBar.setVisibility(View.VISIBLE);
-        new Thread(new Runnable() {
+        downloader = new Thread(new Runnable() {
             @Override
             public void run() {
                 // populate the list with image url
                 getImageUrl(url);
 
                 // select 20 images from arraylist and store in hashmap
-                populateStoredImageUrl();
+                if(!populateStoredImageUrl()){
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Please enter a valid url", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    return;
+                }
 
                 // download the images from image url stored in list
                 File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                isImagesDownloaded = true;
 
                 for (int i=0; i<filenames.length; i++) {
+                    if(downloader.isInterrupted()){
+                        // clear all the relevant data structures
+                        imageUrlExtracted.clear();
+                        storedImageUrl.clear();
+                        downloader = null;
+                        Log.d("testing message", "Code got here");
+                        return;
+                    }
                     File destFile = new File(dir, filenames[i]);
                     String imgUrl = storedImageUrl.get(filenames[i]);
                     ImageDownloader.downloadImage(imgUrl, destFile);
@@ -173,12 +209,17 @@ public class MainActivity extends AppCompatActivity{
                             imgView.setImageResource(0);
                             imgView.setImageBitmap(bitmap);
                             progressBar.incrementProgressBy(5);
+                            if(progressBar.getProgress() == 100){
+                                progressBar.setProgress(0);
+                                progressBar.setVisibility(View.INVISIBLE);
+                            }
                             gridImageToFilepath.put(position, destFile.getAbsolutePath());
                         }
                     });
                 }
             }
-        }).start();
+        });
+        downloader.start();
     }
     // extract image url from website using Jsoup
     private void getImageUrl(String strURL) {
@@ -205,10 +246,15 @@ public class MainActivity extends AppCompatActivity{
         }
     }
     // store filename (key) and image url (value) in hashmap
-    private void populateStoredImageUrl() {
+    private boolean populateStoredImageUrl() {
+        if(imageUrlExtracted.size() < 20){
+            imageUrlExtracted = new ArrayList<>();
+            return false;
+        }
         for (int i = 0; i < filenames.length; i++) {
             String imageUrl = imageUrlExtracted.remove(i);
             storedImageUrl.put(filenames[i], imageUrl);
         }
+        return true;
     }
 }
