@@ -152,16 +152,31 @@ public class MainActivity extends AppCompatActivity{
     // onclick method for search button
     public void search(View view){
         String url = enterUrl.getText().toString();
-        if(downloader != null){
-            // clear all data structures and reset progress bar
-            if(downloader.isAlive()){
-                downloader.interrupt();
-            }
+        if(url.equals("")){
+            Toast.makeText(getApplicationContext(), "Please enter something", Toast.LENGTH_SHORT).show();
+            return;
         }
-        downloadImagesHandler(url);
-        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+        synchronized (this){
+            if(downloader != null){
+                if(downloader.isAlive()){
+                    // interrupt the thread
+                    downloader.interrupt();
+                    try{
+                        wait(200);
+                        downloader = null;
+                    } catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
+                }
+                imageUrlExtracted.clear();
+                storedImageView.clear();
+            }
+            downloadImagesHandler(url);
+            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+        }
     }
+
     // handle downloading of images
     private void downloadImagesHandler(String url) {
         if(url == null || url.equals("")) return;
@@ -170,7 +185,7 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void run() {
                 // populate the list with image url
-                getImageUrl(url);
+                if(!getImageUrl(url)) return;
 
                 // select 20 images from arraylist and store in hashmap
                 if(!populateStoredImageUrl()){
@@ -187,45 +202,42 @@ public class MainActivity extends AppCompatActivity{
                 File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
                 isImagesDownloaded = true;
 
-                for (int i=0; i<filenames.length; i++) {
-                    if(downloader.isInterrupted()){
-                        // clear all the relevant data structures
-                        imageUrlExtracted.clear();
-                        storedImageUrl.clear();
-                        downloader = null;
-                        Log.d("testing message", "Code got here");
-                        return;
-                    }
-                    File destFile = new File(dir, filenames[i]);
-                    String imgUrl = storedImageUrl.get(filenames[i]);
-                    ImageDownloader.downloadImage(imgUrl, destFile);
-                    ImageView imgView = imageViewList.get(i);
-                    int position = i;
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Bitmap bitmap = BitmapFactory.decodeFile(destFile.getAbsolutePath());
-                            // get imageview from list initialised in the myAdapter class
-                            imgView.setImageResource(0);
-                            imgView.setImageBitmap(bitmap);
-                            progressBar.incrementProgressBy(5);
-                            if(progressBar.getProgress() == 100){
-                                progressBar.setProgress(0);
-                                progressBar.setVisibility(View.INVISIBLE);
-                            }
-                            gridImageToFilepath.put(position, destFile.getAbsolutePath());
+                synchronized (this){
+                    for (int i=0; i<filenames.length; i++) {
+                        if(downloader.isInterrupted()){
+                            Log.d("testing message", "Code got here");
+                            return;
                         }
-                    });
+                        File destFile = new File(dir, filenames[i]);
+                        String imgUrl = storedImageUrl.get(filenames[i]);
+                        ImageDownloader.downloadImage(imgUrl, destFile);
+                        ImageView imgView = imageViewList.get(i);
+                        int position = i;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Bitmap bitmap = BitmapFactory.decodeFile(destFile.getAbsolutePath());
+                                // get imageview from list initialised in the myAdapter class
+                                imgView.setImageResource(0);
+                                imgView.setImageBitmap(bitmap);
+                                progressBar.incrementProgressBy(5);
+                                if(progressBar.getProgress() == 100){
+                                    progressBar.setProgress(0);
+                                    progressBar.setVisibility(View.INVISIBLE);
+                                }
+                                gridImageToFilepath.put(position, destFile.getAbsolutePath());
+                            }
+                        });
+                    }
                 }
+
             }
         });
         downloader.start();
     }
     // extract image url from website using Jsoup
-    private void getImageUrl(String strURL) {
-
+    private boolean getImageUrl(String strURL) {
         //connect to the website and get the document
-
         try {
             Document document = Jsoup
                     .connect(strURL)
@@ -242,8 +254,9 @@ public class MainActivity extends AppCompatActivity{
             }
         } catch (IOException e) {
             Log.d("downloading images failed", "Image downloader from getImageUrl failed");
-            e.printStackTrace();
+            return false;
         }
+        return true;
     }
     // store filename (key) and image url (value) in hashmap
     private boolean populateStoredImageUrl() {
