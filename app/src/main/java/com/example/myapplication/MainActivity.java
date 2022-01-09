@@ -47,13 +47,10 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        // initialise the filenames
         initFilenames();
-        // gotten back the list of imageview after initUIElements, where the gridview is initialised
+
         initUIElements();
-//        downloadImagesHandler();
-        // download images
-//        downloadImagesHandler();
     }
 
     private void initUIElements() {
@@ -91,7 +88,7 @@ public class MainActivity extends AppCompatActivity{
             });
         }
     }
-
+    // combine all the images selected into a list
     private void tabulateSelectedImageView(int position){
         if(storedImageView.contains(position)){
             Toast.makeText(getApplicationContext(), "Added this image already", Toast.LENGTH_SHORT).show();
@@ -117,14 +114,14 @@ public class MainActivity extends AppCompatActivity{
             filenames[i] = filename;
         }
     }
-
+    // onclick method for search button
     public void search(View view){
         String url = enterUrl.getText().toString();
         downloadImagesHandler(url);
         InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
     }
-
+    // handle downloading of images
     private void downloadImagesHandler(String url) {
         if(url == null || url.equals("")) return;
         new Thread(new Runnable() {
@@ -155,14 +152,12 @@ public class MainActivity extends AppCompatActivity{
                             gridImageDescriptors.put(position, destFile.getAbsolutePath());
                         }
                     });
-
                 }
             }
         }).start();
     }
-
+    // extract image url from website using Jsoup
     private void getImageUrl(String strURL) {
-//        String strURL = "https://www.stocksnap.io";
 
         //connect to the website and get the document
 
@@ -184,9 +179,8 @@ public class MainActivity extends AppCompatActivity{
             Log.d("downloading images failed", "Image downloader from getImageUrl failed");
             e.printStackTrace();
         }
-
     }
-
+    // store filename (key) and image url (value) in hashmap
     private void populateStoredImageUrl() {
         for (int i = 0; i < filenames.length; i++) {
             String imageUrl = imageUrlExtracted.remove(i);

@@ -11,9 +11,7 @@ import android.util.Log;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,6 +23,7 @@ public class EnterRoom extends AppCompatActivity implements IImageModified{
     Thread checkWinningStatus;
     private int pairs = 0;
     RoomAdapter adapter;
+    TextView timer;
     // create list to capture images that are correctly selected
     private List<Integer> selectedPositions = new ArrayList<>();
     // stores filename as key, and image model as values
@@ -34,6 +33,7 @@ public class EnterRoom extends AppCompatActivity implements IImageModified{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_enter_room);
 
+        timer = findViewById(R.id.timer);
         winningStatus = findViewById(R.id.winning_status);
         setWinningStatus();
         Intent intent = getIntent();
@@ -42,6 +42,48 @@ public class EnterRoom extends AppCompatActivity implements IImageModified{
         adapter = new RoomAdapter(this, images, this);
         GridView gridView = (GridView) findViewById(R.id.gridView2);
         gridView.setAdapter(adapter);
+
+        timerControl();
+
+    }
+
+    private void timerControl(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long durationInMins = 1;
+                long durationInSec = durationInMins * 60;
+                while(durationInSec > 0){
+                    durationInSec -= 1;
+                    long timeToDisplay = durationInSec;
+                    long secsToDisplay = (timeToDisplay) % 60;
+                    long minsToDisplay = (timeToDisplay) / 60;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            timer.setText(String.format("%02d : %02d", minsToDisplay, secsToDisplay));
+                        }
+                    });
+
+                    try{
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
+                }
+                if(pairs < 6){
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Intent intent = new Intent(getApplicationContext(), GameOutcome.class);
+                            intent.putExtra("outcome", "lost");
+                            startActivity(intent);
+
+                        }
+                    });
+                }
+            }
+        }).start();
     }
 
     private void setWinningStatus(){
@@ -102,12 +144,14 @@ public class EnterRoom extends AppCompatActivity implements IImageModified{
         }
         Log.d("Winning pairs", String.format("%s", pairs));
         if(pairs == 6){
-            Intent intent = new Intent(this, WinningMessage.class);
+            Intent intent = new Intent(this, GameOutcome.class);
+            intent.putExtra("outcome", "won");
             startActivity(intent);
             finish();
         }
     }
 
+    // when the two images are not similar, close them
     public void closeImages(ImageView image1, ImageView image2){
         new Thread(new Runnable() {
             @Override
